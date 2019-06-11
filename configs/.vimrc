@@ -35,6 +35,44 @@ set tags+=~/.vim/tags/gl
 set tags+=~/.vim/tags/sdl
 set tags+=~/.vim/tags/qt4
 
+"set list
+"set listchars=trail:*
+
+let g:toggleHighlightWhitespace = 1    
+function! ToggleHighlightWhitespace()    
+  let g:toggleHighlightWhitespace = 1 - g:toggleHighlightWhitespace     
+  call RefreshHighlightWhitespace()    
+endfunction    
+
+function! RefreshHighlightWhitespace()    
+  if g:toggleHighlightWhitespace == 1 " normal action, do the hi    
+    highlight ExtraWhitespace ctermbg=red guibg=red    
+    match ExtraWhitespace /\s\+$/    
+    augroup HighLightWhitespace    
+      autocmd BufWinEnter * match ExtraWhitespace /\s\+$/    
+      autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/    
+      autocmd InsertLeave * match ExtraWhitespace /\s\+$/    
+      autocmd BufWinLeave * call clearmatches()    
+    augroup END    
+  else " clear whitespace highlighting    
+    call clearmatches()    
+    autocmd! HighLightWhitespace BufWinEnter    
+    autocmd! HighLightWhitespace InsertEnter    
+    autocmd! HighLightWhitespace InsertLeave    
+    autocmd! HighLightWhitespace BufWinLeave    
+  endif    
+endfunction    
+
+autocmd InsertEnter * call RefreshHighlightWhitespace()
+autocmd InsertLeave * call RefreshHighlightWhitespace()
+autocmd BufWinEnter * call RefreshHighlightWhitespace()    
+autocmd BufWinLeave * call RefreshHighlightWhitespace()    
+"nnoremap <leader>w :call ToggleHighlightWhitespace()<cr>
+
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal! g'\"" | endif
+endif
 
 " set 'selection', 'selectmode', 'mousemodel' and 'keymodel' for MS-Windows
 behave mswin
@@ -59,6 +97,8 @@ map <S-Insert>      "+gP
 
 cmap <C-V>      <C-R>+
 cmap <S-Insert>     <C-R>+
+
+
 
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
@@ -127,5 +167,4 @@ imap <C-v> <Esc>pi
 imap <C-y> <Esc>ddi
 map <C-z> <Esc>
 imap <C-z> <Esc>ui
-
 
